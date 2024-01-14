@@ -6,52 +6,32 @@ from scipy.stats import bootstrap
 
 
 def sensitivity_wrapper(true, pred):
-    """
-    Wrap sensitivity score calculation.
-    """
     return metrics.recall_score(true, pred)
 
 
 def specifity_wrapper(true, pred):
-    """
-    Wrap specifity score calculation.
-    """
     return metrics.recall_score(true, pred, pos_label=0)
 
 
 def AUC_wrapper(true, pred):
-    """
-    Wrap ROC AUC score calculation.
-    """
     return metrics.roc_auc_score(true, pred)
+
+def f1_wrapper(true, pred):
+    return metrics.f1_score(true, pred)
 
 
 def get_results(true, pred, proba, text=''):
-    """
-    Get performance metrics and confidence intervals for a binary classification model.
-
-    Parameters:
-        true (array-like, shape (n_samples)): True labels of the samples.
-        pred (array-like, shape (n_samples)): Predicted labels of the samples.
-        proba (array-like, shape (n_samples)): Probabilities of the positive class for each sample.
-        text (str, optional (default '')): Additional text to print along with the results
-
-    Returns:
-        None
-
-    Prints out ROC AUC, sensitivity, specificity, and their corresponding confidence intervals.
-    """
     res = bootstrap((true, proba), AUC_wrapper, vectorized=False,
-                    paired=True, random_state=30598).confidence_interval
+                    paired=True, random_state=2401).confidence_interval
     space = ' '*(30 - len(text) - len('ROC AUC'))
     print(f'{text} ROC AUC {space}'
           f'{round(AUC_wrapper(true, proba),2):<5} '
           f'[{round(res[0], 2)}-{round(res[1], 2)}]')
-    test_list = [sensitivity_wrapper, specifity_wrapper]
-    test_names = ['Sensitivity:', 'Specifity:']
+    test_list = [sensitivity_wrapper, specifity_wrapper, f1_wrapper]
+    test_names = ['Sensitivity:', 'Specifity:', 'F1 Score:']
     for num, test in enumerate(test_list):
         res = bootstrap((true, pred), test, vectorized=False,
-                        paired=True, random_state=30598).confidence_interval
+                        paired=True, random_state=2401).confidence_interval
         space = ' '*(30 - len(text) - len(test_names[num]))
         print(f'{text} {test_names[num]} {space}'
               f'{round(test(true, pred),2):<5} '
@@ -61,17 +41,6 @@ def get_results(true, pred, proba, text=''):
 
 
 def get_roc_curve(model):
-    """
-    Get ROC curve and AUC for a given model.
-
-    Parameters:
-        model (callable): The machine learning model to be evaluated.
-
-    Returns:
-        None
-
-    The function saves the plot to a file named 'svm_roc_auc.png' in the same directory as the calling script.
-    """
     plt.clf()
     fpr0, tpr0, _ = metrics.roc_curve(
         model.y_train, model.predict(model.X_train)[1])
@@ -87,9 +56,9 @@ def get_roc_curve(model):
     for key, value in data.items():
         ax, fpr, tpr, auc = value
         ax.plot(fpr, tpr, color="#007ee2",
-                label=f"ROC, AUC = {auc:.2f}")
+                     label=f"ROC, AUC = {auc:.2f}")
         ax.plot([0, 1], [0, 1], color="#00bac4",
-                linestyle="--", label="Guessing")
+                     linestyle="--", label="Guessing")
         ax.set_xlabel("False positive rate", fontsize=12)
         ax.set_ylabel("True positive rate", fontsize=12)
         ax.legend(loc=4, fontsize=12)
@@ -100,17 +69,6 @@ def get_roc_curve(model):
 
 
 def get_boxplot(model):
-    """
-    Get a box plot of the individual feature importance for a given model.
-
-    Parameters:
-        model (callable): The machine learning model to be evaluated.
-
-    Returns:
-        None
-
-    The function saves the plot to a file named 'boxplots.png' in the same directory as the calling script.
-    """
     plt.clf()
     individual_feature_importance = np.multiply(
         model.svm.estimator.coef_[0], model.X_train)
@@ -138,19 +96,6 @@ def get_boxplot(model):
 
 
 def get_table_2(transformer, model):
-    """
-    Prints a table of coefficients, intercept, and transformer parameters for a linear SVM.
-
-    Parameters:
-        transformer: Transformer object containing preprocessed data and transformation parameters.
-        model: linear SVM model object
-
-    Returns:
-        None
-
-    The function prints a table to the console that summarizes the coefficients, intercept,
-    and transformer parameters of the linear SVM model.
-    """
     feature, impute, mean, std = [], [], [], []
     for pipeline in transformer.transformers_:
         feature += pipeline[2]
@@ -175,17 +120,11 @@ def get_table_2(transformer, model):
 
 
 def get_intercept(model):
-    """
-    Prints the intercept of the given SVM model and returns None.
-    """
     print('Intercept: ', model.svm.estimator.intercept_[0])
     return None
 
 
 def get_platt_scaling(model):
-    """
-    Prints the Platt scaling parameters (A and B) of the given SVM model and returns None.
-    """
     params = np.array([
         model.svm.calibrated_classifiers_[0].calibrators[0].a_,
         model.svm.calibrated_classifiers_[0].calibrators[0].b_])
