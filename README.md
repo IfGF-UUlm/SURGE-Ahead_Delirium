@@ -9,9 +9,9 @@ The repository has the following structure:
 - [`LICENSE`](./LICENSE): MIT License for this project
 - [`LR.py`](./LR.py): Implementation of the logistic regression (LR) model
 - [`SVM.py`](./SVM.py): Implementation of the linear support vector machine (SVM) model
-- [`utils.py`](./utils.py): Utility and Helper Functions
 - [`main.py`](./main.py): Main script to train the SVM model and evaluate its performance
 - [`requirements.txt`](./requirements.txt): List of required Python packages for this project
+- [`utils.py`](./utils.py): Utility and Helper Functions
 
 ## Getting Started
 This repository reports the code for transparency. As soon as the PAWEL dataset is released to the public, the data needed to train the models will be added to the repository. To inspect and review the code:
@@ -30,6 +30,7 @@ This project requires Python 3.x and the following packages:
 - NumPy
 - Pandas
 - Scikit-learn
+
 You can install all dependencies by running `pip install -r requirements.txt`.
 
 ## License
